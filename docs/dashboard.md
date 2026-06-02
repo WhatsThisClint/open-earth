@@ -1,4 +1,4 @@
-﻿# Dashboard
+# Dashboard
 
 Open Earth includes a local dashboard for configuring agents without leaving the project.
 

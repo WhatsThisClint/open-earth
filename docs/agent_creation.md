@@ -1,4 +1,4 @@
-﻿# Agent Creation
+# Agent Creation
 
 Use the wizard:
 

@@ -1,4 +1,4 @@
-﻿# ChatGPT And Codex Auth
+# ChatGPT And Codex Auth
 
 Open Earth keeps model, auth, and runtime as separate choices:
 

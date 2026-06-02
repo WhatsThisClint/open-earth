@@ -1,4 +1,4 @@
-﻿name: Review And Publish
+name: Review And Publish
 description: Run writer and checker over an existing artifact ledger.
 inputs:
   - artifact_ledger

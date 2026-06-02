@@ -56,6 +56,20 @@ def test_template_manifests_validate():
     assert "dem_elevation" in DataAcquisitionCatalog(TEMPLATE_ROOT).recipes()
 
 
+def test_packaged_text_files_do_not_start_with_bom():
+    text_suffixes = {".md", ".py", ".yaml", ".yml", ".json", ".toml", ".txt", ".css", ".js", ".html"}
+    roots = [ROOT / "README.md", ROOT / "docs", ROOT / "src" / "earthswarm" / "templates"]
+    checked = 0
+    for root in roots:
+        paths = [root] if root.is_file() else sorted(path for path in root.rglob("*") if path.is_file())
+        for path in paths:
+            if path.suffix.lower() not in text_suffixes:
+                continue
+            checked += 1
+            assert not path.read_bytes().startswith(b"\xef\xbb\xbf"), f"{path} starts with a UTF-8 BOM"
+    assert checked > 0
+
+
 def test_diagnostic_report_dry_run(tmp_path):
     project = make_project(tmp_path)
     loader = ManifestLoader(project)

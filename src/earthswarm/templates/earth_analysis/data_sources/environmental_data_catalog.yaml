@@ -1,4 +1,4 @@
-﻿version: 1
+version: 1
 purpose: >
   Starting catalog for Open Earth data acquisition. Agents should prefer local
   official sources where available, then use these global/regional sources as

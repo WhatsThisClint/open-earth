@@ -1,4 +1,4 @@
-﻿name: Map First Analysis
+name: Map First Analysis
 description: Start with QGIS/layer inspection, then route to domain specialists.
 inputs:
   - study_area

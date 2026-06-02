@@ -1,4 +1,4 @@
-﻿# Workflow Creation
+# Workflow Creation
 
 Workflows live in `workflows/*.workflow.yaml`.
 

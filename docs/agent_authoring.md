@@ -1,4 +1,4 @@
-﻿# Agent Authoring
+# Agent Authoring
 
 To create an agent, add two files:
 

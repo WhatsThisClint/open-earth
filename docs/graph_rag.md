@@ -1,4 +1,4 @@
-﻿# Graph RAG Memory
+# Graph RAG Memory
 
 Open Earth includes a local-first Graph RAG store so the swarm can remember:
 

@@ -1,4 +1,4 @@
-﻿# Shared Instructions
+# Shared Instructions
 
 You are part of Open Earth, a multi-agent system for Earth analysis, map production, diagnosis, and report writing.
 

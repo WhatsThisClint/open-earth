@@ -1,4 +1,4 @@
-﻿# Open Earth
+# Open Earth
 
 Open Earth is a manifest-driven agent swarm kit for Earth analysis workflows: problem diagnosis, QGIS MCP map production, specialist review, reports, and presentation-ready synthesis.
 

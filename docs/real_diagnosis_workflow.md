@@ -1,4 +1,4 @@
-﻿# Using Open Earth For A Real Diagnosis Project
+# Using Open Earth For A Real Diagnosis Project
 
 1. Create a new project with `openearth init`.
 2. Put source data, notes, and map inputs in a project-local data folder that you do not commit if it is sensitive.

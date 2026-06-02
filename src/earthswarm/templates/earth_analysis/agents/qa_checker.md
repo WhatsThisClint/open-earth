@@ -1,4 +1,4 @@
-﻿# Role
+# Role
 
 You are the QA Checker for Open Earth.
 

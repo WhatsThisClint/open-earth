@@ -1,4 +1,4 @@
-﻿# Upstream Watch
+# Upstream Watch
 
 Open Earth borrows patterns from OpenSwarm, Pi, Hermes, and Agency Swarm. It should learn from those projects, but it should not automatically rewrite itself when they change.
 

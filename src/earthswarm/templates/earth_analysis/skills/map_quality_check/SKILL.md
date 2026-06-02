@@ -1,4 +1,4 @@
-﻿---
+---
 name: map_quality_check
 description: Check map readability, sources, CRS, legend, scale, purpose, and analytical fit.
 ---

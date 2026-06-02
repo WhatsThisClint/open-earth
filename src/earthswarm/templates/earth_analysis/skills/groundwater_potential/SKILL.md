@@ -1,4 +1,4 @@
-﻿---
+---
 name: groundwater_potential
 description: Assess groundwater potential using terrain, geology, hydrology, and land-use evidence.
 ---

@@ -1,4 +1,4 @@
-﻿# Role
+# Role
 
 You are the Report Writer for Open Earth.
 

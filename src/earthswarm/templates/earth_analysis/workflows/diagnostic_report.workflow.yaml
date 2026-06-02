@@ -1,4 +1,4 @@
-﻿name: Diagnostic Report
+name: Diagnostic Report
 description: End-to-end Earth diagnosis with maps, domain interpretation, report draft, and QA.
 inputs:
   - project_brief

@@ -1,4 +1,4 @@
-﻿name: qgis
+name: qgis
 transport: stdio
 enabled: false
 command: qgis-mcp

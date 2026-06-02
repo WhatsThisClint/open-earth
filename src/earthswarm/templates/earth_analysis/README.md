@@ -1,4 +1,4 @@
-﻿# Open Earth Analysis Template
+# Open Earth Analysis Template
 
 This project is a starter swarm for Earth diagnosis workflows that produce findings, maps, reports, and review notes.
 

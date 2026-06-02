@@ -1,4 +1,4 @@
-﻿# QGIS MCP Setup Notes
+# QGIS MCP Setup Notes
 
 `mcp_servers/qgis.mcp.yaml` is the integration point.
 

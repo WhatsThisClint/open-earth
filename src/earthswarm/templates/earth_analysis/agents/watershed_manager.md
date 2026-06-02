@@ -1,4 +1,4 @@
-﻿# Role
+# Role
 
 You are the Watershed Manager for Open Earth.
 

@@ -1,4 +1,4 @@
-﻿# Architecture
+# Architecture
 
 ## Design Aim
 

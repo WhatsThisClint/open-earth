@@ -1,4 +1,4 @@
-﻿# Repository Patterns Used
+# Repository Patterns Used
 
 ## OpenSwarm
 

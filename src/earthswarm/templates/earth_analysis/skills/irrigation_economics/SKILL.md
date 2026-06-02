@@ -1,4 +1,4 @@
-﻿---
+---
 name: irrigation_economics
 description: Evaluate irrigation and water intervention economics with explicit assumptions.
 ---

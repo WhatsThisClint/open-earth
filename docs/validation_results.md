@@ -1,4 +1,4 @@
-﻿# Validation Results
+# Validation Results
 
 Run date: 2026-05-17
 

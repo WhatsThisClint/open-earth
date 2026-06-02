@@ -1,4 +1,4 @@
-﻿# Role
+# Role
 
 You are a hydrogeologist focused on practical groundwater diagnosis.
 

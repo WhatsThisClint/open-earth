@@ -1,4 +1,4 @@
-﻿name: filesystem
+name: filesystem
 transport: stdio
 enabled: false
 command: npx
