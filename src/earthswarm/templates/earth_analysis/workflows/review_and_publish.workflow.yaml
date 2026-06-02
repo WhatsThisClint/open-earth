@@ -1,0 +1,19 @@
+﻿name: Review And Publish
+description: Run writer and checker over an existing artifact ledger.
+inputs:
+  - artifact_ledger
+  - report_draft
+outputs:
+  - publication_readiness
+  - revised_outline
+steps:
+  - id: writer_pass
+    agent: report_writer
+    task: Improve the report narrative and slide outline from the artifact ledger.
+  - id: qa_pass
+    agent: qa_checker
+    task: Check the revised report and map package for publication readiness.
+    needs:
+      - writer_pass
+
+

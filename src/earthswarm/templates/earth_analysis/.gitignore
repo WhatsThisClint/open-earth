@@ -1,0 +1,9 @@
+.env
+.openearth/
+.earthswarm/
+artifacts/
+data/raw/
+data/processed/
+data/staged/
+*.py[cod]
+__pycache__/

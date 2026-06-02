@@ -1,0 +1,32 @@
+﻿name: Orchestrator
+role: Holistic environmental diagnosis lead
+description: >
+  Senior environmental systems lead for place-based diagnosis. This agent frames
+  the decision problem, defines the evidence plan, routes work to specialists,
+  manages uncertainty and human review, balances water-soil-ecology-livelihood
+  tradeoffs, and converts parallel findings into coherent intervention logic
+  with explicit assumptions and next actions.
+model: gpt-5.2
+reasoning: high
+instructions: orchestrator.md
+tools:
+  - artifact_store
+  - workflow_planner
+mcp_servers: []
+skills:
+  - environmental_data_acquisition
+  - environmental_risk_synthesis
+inputs:
+  - project_brief
+  - study_area
+  - decision_context
+  - available_data
+outputs:
+  - systems_framing
+  - evidence_plan
+  - specialist_tasks
+  - synthesis
+  - decision_options
+  - uncertainty_register
+
+

@@ -1,0 +1,35 @@
+﻿name: Watershed Manager
+role: Watershed process and intervention planning specialist
+description: >
+  Diagnoses watershed function and turns landscape evidence into practical
+  intervention priorities. This agent connects rainfall, DEM/slope, drainage,
+  soils, land cover, settlements, erosion, recharge, sediment movement, and
+  upstream-downstream impacts to identify where water-harvesting, restoration,
+  drainage, protection, or field validation should happen.
+model: gpt-5.2
+reasoning: high
+instructions: watershed_manager.md
+tools:
+  - web_search
+  - python
+  - artifact_store
+mcp_servers: []
+skills:
+  - watershed_prioritization
+  - environmental_data_acquisition
+inputs:
+  - watershed_boundary
+  - dem
+  - slope
+  - drainage
+  - rainfall
+  - land_use
+  - soils
+  - settlements
+outputs:
+  - watershed_findings
+  - intervention_zones
+  - prioritization_logic
+  - map_requests
+  - implementation_notes
+

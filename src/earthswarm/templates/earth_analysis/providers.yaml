@@ -1,0 +1,64 @@
+﻿version: 1
+default_provider: ollama_local
+profiles:
+  - id: codex_cli
+    provider: openai
+    auth: codex_cli_login
+    runtime: codex_cli
+    default_model: gpt-5.5
+    role: synthesis
+    notes: >
+      Uses the official Codex CLI. Sign in with
+      `openearth auth login --provider codex-cli`, then run live workflows with
+      `openearth run <workflow> --task "..." --live --backend codex-cli`.
+  - id: openai_api_key
+    provider: openai
+    auth: env
+    env: OPENAI_API_KEY
+    runtime: agency
+    default_model: gpt-5.2
+    role: orchestrator
+    notes: >
+      Uses OpenAI Platform API-key billing through Agency Swarm.
+  - id: openai_codex_oauth
+    provider: openai
+    auth: oauth
+    auth_provider: openai-codex
+    runtime: codex_native
+    default_model: openai/gpt-5.5
+    role: future_native_codex
+    notes: >
+      Stores an OpenClaw-style ChatGPT/Codex OAuth profile for a future native
+      Codex harness. Agency Swarm cannot consume these OAuth tokens directly.
+  - id: ollama_local
+    provider: ollama
+    auth: none
+    runtime: openai_compatible
+    base_url: http://localhost:11434/v1
+    default_model: minimax-m3:cloud
+    role: extraction
+    notes: >
+      Local or cloud Ollama OpenAI-compatible endpoint. Configure model names
+      to match what `ollama list` or `ollama run <model>` can resolve.
+  - id: openrouter
+    provider: openrouter
+    auth: env
+    env: OPENROUTER_API_KEY
+    runtime: openai_compatible
+    base_url: https://openrouter.ai/api/v1
+    default_model: openrouter/auto
+    role: fallback
+    notes: >
+      Optional OpenAI-compatible routing provider for experiments and fallback
+      models.
+  - id: nvidia_kimi
+    provider: nvidia
+    auth: env
+    env: NVIDIA_API_KEY
+    runtime: nvidia_chat
+    base_url: https://integrate.api.nvidia.com/v1/chat/completions
+    default_model: moonshotai/kimi-k2.6
+    role: synthesis
+    notes: >
+      Hosted NVIDIA route for long-context synthesis. Store the key in
+      NVIDIA_API_KEY or NVAPI_KEY; never paste keys into agent manifests.

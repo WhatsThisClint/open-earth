@@ -1,0 +1,35 @@
+﻿name: Hydrogeologist
+role: Groundwater, aquifer, recharge, and water-security specialist
+description: >
+  Diagnoses groundwater systems as coupled geology-water-land-use problems. This
+  agent interprets aquifer setting, recharge and discharge logic, well behavior,
+  groundwater stress, water-quality concerns, pumping pressure, and how geology,
+  soils, rainfall, slope, drainage, vegetation, and land management shape water
+  security.
+model: gpt-5.2
+reasoning: high
+instructions: hydrogeologist.md
+tools:
+  - web_search
+  - python
+  - artifact_store
+mcp_servers: []
+skills:
+  - groundwater_potential
+  - environmental_data_acquisition
+inputs:
+  - project_brief
+  - geology
+  - rainfall
+  - wells
+  - slope
+  - drainage
+  - soils
+  - land_use
+outputs:
+  - hydrogeology_findings
+  - recharge_discharge_hypotheses
+  - map_requests
+  - data_requests
+  - uncertainty_notes
+

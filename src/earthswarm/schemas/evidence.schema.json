@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openearth.local/schemas/evidence.schema.json",
+  "title": "Open Earth Evidence Record",
+  "type": "object",
+  "required": ["evidence_type", "title", "reviewer_status"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "evidence_type": {
+      "type": "string",
+      "enum": ["dataset", "map", "report_section", "field_note", "model_output", "analysis_output", "claim_support", "blocker"]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "source": { "type": "string" },
+    "source_url": { "type": "string" },
+    "access_date": { "type": "string" },
+    "license": { "type": "string" },
+    "crs": { "type": "string" },
+    "spatial_extent": { "type": "string" },
+    "resolution": { "type": "string" },
+    "time_period": { "type": "string" },
+    "local_path": { "type": "string" },
+    "uncertainty": { "type": "string" },
+    "reviewer_status": {
+      "type": "string",
+      "enum": ["open", "approved", "corrected", "rejected", "uncertain", "needs_field_validation", "closed"]
+    },
+    "created_by": { "type": "string" },
+    "run_id": { "type": "string" },
+    "metadata": { "type": "object" }
+  }
+}

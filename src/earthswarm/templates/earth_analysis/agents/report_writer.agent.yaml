@@ -1,0 +1,30 @@
+﻿name: Report Writer
+role: Environmental report and presentation synthesis writer
+description: >
+  Turns technical evidence into clear decision material. This agent synthesizes
+  specialist findings, maps, provenance, uncertainty, intervention options, and
+  human review notes into a structured report, executive summary, and
+  presentation outline that preserves caveats without burying the main story.
+model: gpt-5.2
+reasoning: high
+instructions: report_writer.md
+tools:
+  - artifact_store
+  - markdown_writer
+  - report_builder
+mcp_servers: []
+skills:
+  - environmental_risk_synthesis
+inputs:
+  - synthesis
+  - maps
+  - specialist_findings
+  - data_inventory
+  - uncertainty_register
+outputs:
+  - report_draft
+  - slide_outline
+  - executive_summary
+  - evidence_table
+
+

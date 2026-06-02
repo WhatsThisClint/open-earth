@@ -1,0 +1,211 @@
+﻿version: 1
+purpose: >
+  Starting catalog for Open Earth data acquisition. Agents should prefer local
+  official sources where available, then use these global/regional sources as
+  defensible defaults.
+general_rules:
+  - Download only the AOI and time period needed when possible.
+  - Record source URL, access date, license/terms, resolution, local path, and processing notes.
+  - Do not treat login-required data as downloaded unless credentials are available.
+  - Keep raw files in data/raw and derived outputs in data/processed.
+sources:
+  - id: nasa_earthdata
+    name: NASA Earthdata / EOSDIS
+    organization: NASA
+    themes: [remote_sensing, dem, climate, land_surface, earth_observation]
+    url: https://www.earthdata.nasa.gov/
+    access:
+      method: earthaccess_python_or_portal
+      auth: free_earthdata_login_often_required
+      notes: NASA recommends the Earthaccess tool for large-scale downloads.
+    use_for:
+      - Landsat/MODIS-derived products
+      - NASADEM/SRTM and other mission data
+      - Earth-observation data requiring Earthdata authentication
+    caveats:
+      - Requires dataset-specific DAAC selection.
+      - Some products need Earthdata Login and license acknowledgement.
+
+  - id: copernicus_data_space
+    name: Copernicus Data Space Ecosystem
+    organization: European Union Copernicus
+    themes: [sentinel, sar, optical, dem, atmosphere, land]
+    url: https://dataspace.copernicus.eu/
+    access:
+      method: catalogue_api_odata_s3_or_portal
+      auth: free_account_for_download_tokens
+      notes: S3 and OData APIs support programmatic access to Sentinel and other EO data.
+    use_for:
+      - Sentinel-1 SAR
+      - Sentinel-2 optical imagery
+      - Sentinel-3 and Sentinel-5P where relevant
+    caveats:
+      - Downloads may require OAuth/access token.
+      - Cloud cover and acquisition date must be checked.
+
+  - id: esa_worldcover
+    name: ESA WorldCover
+    organization: European Space Agency
+    themes: [land_cover, remote_sensing]
+    url: https://esa-worldcover.org/en/data-access
+    access:
+      method: s3_cog_or_viewer
+      auth: public_s3_for_tiles_or_viewer_login
+      notes: 10 m land-cover products are distributed as 3x3 degree COG tiles.
+    use_for:
+      - land-cover baseline
+      - ecosystem and land-management context
+    caveats:
+      - Classification accuracy and year must be reported.
+      - Use source classes cautiously for small parcels.
+
+  - id: dynamic_world
+    name: Dynamic World V1
+    organization: Google / World Resources Institute
+    themes: [land_cover, change_detection, remote_sensing]
+    url: https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1
+    access:
+      method: google_earth_engine
+      auth: earth_engine_account_required
+      notes: Near-real-time 10 m land-use/land-cover probabilities from Sentinel-2.
+    use_for:
+      - recent land-cover dynamics
+      - land-cover class probabilities
+    caveats:
+      - Earth Engine access is required.
+      - Cloud and class probability thresholds matter.
+
+  - id: chirps
+    name: CHIRPS Rainfall
+    organization: Climate Hazards Center, UC Santa Barbara
+    themes: [rainfall, drought, climate]
+    url: https://www.chc.ucsb.edu/data/chirps
+    access:
+      method: http_ftp_or_cloud_catalog
+      auth: public
+      notes: Quasi-global rainfall from 1981 to near-present at 0.05 degree resolution.
+    use_for:
+      - rainfall climatology
+      - drought and seasonal rainfall signals
+      - hydroclimate context
+    caveats:
+      - Covers 50S to 50N.
+      - Gridded data may miss very local rainfall variability.
+
+  - id: hydrosheds
+    name: HydroSHEDS Core Products
+    organization: HydroSHEDS / WWF and partners
+    themes: [watershed, drainage, dem, hydrology]
+    url: https://www.hydrosheds.org/hydrosheds-core-downloads
+    access:
+      method: direct_download_tiles
+      auth: public_with_license_terms
+      notes: Provides DEM-derived drainage, flow direction, accumulation, and watershed products.
+    use_for:
+      - watershed and drainage analysis
+      - flow accumulation and stream network context
+    caveats:
+      - Choose resolution appropriate to scale.
+      - Check license/attribution requirements.
+
+  - id: opentopography
+    name: OpenTopography
+    organization: OpenTopography / NSF-supported facility
+    themes: [dem, lidar, topography]
+    url: https://opentopography.org/
+    access:
+      method: portal_or_global_dem_api
+      auth: api_key_may_be_required_for_global_datasets
+      notes: Provides lidar and global DEM access, including API-based clipped DEM retrieval.
+    use_for:
+      - elevation
+      - slope/aspect
+      - terrain and drainage derivatives
+    caveats:
+      - Global datasets are raster only and typically 30-500 m resolution.
+      - API-key requirements may apply.
+
+  - id: soilgrids
+    name: SoilGrids
+    organization: ISRIC
+    themes: [soil, texture, carbon, ph, bulk_density]
+    url: https://soilgrids.org/
+    access:
+      method: web_services_api_or_download
+      auth: public
+      notes: Global gridded soil property predictions useful when national soil surveys are unavailable.
+    use_for:
+      - soil texture and depth proxies
+      - soil organic carbon and pH context
+      - erosion/infiltration interpretation
+    caveats:
+      - Model predictions, not field observations.
+      - Resolution may be too coarse for parcel-scale recommendations.
+
+  - id: worldpop
+    name: WorldPop
+    organization: WorldPop
+    themes: [population, demographics, exposure]
+    url: https://www.worldpop.org/
+    access:
+      method: portal_or_api
+      auth: public
+      notes: Gridded population and demographic datasets.
+    use_for:
+      - exposure and beneficiary estimates
+      - livelihood and settlement context
+    caveats:
+      - Treat as modeled estimates.
+      - Prefer official census data for final demographic claims where available.
+
+  - id: openstreetmap
+    name: OpenStreetMap
+    organization: OpenStreetMap contributors
+    themes: [roads, settlements, water, landuse, infrastructure]
+    url: https://www.openstreetmap.org/
+    access:
+      method: overpass_geofabrik_or_qgis_plugins
+      auth: public
+      notes: Useful for roads, settlements, water bodies, and local infrastructure where coverage is good.
+    use_for:
+      - accessibility and settlement context
+      - roads and infrastructure
+      - preliminary water/land-use features
+    caveats:
+      - Completeness varies by place.
+      - Must attribute OSM contributors.
+
+  - id: india_wris
+    name: India-WRIS
+    organization: CWC, Ministry of Jal Shakti, NRSC/ISRO and partners
+    themes: [india, water_resources, groundwater, watersheds, rivers, dams]
+    url: https://indiawris.gov.in/
+    access:
+      method: webgis_portal_download
+      auth: public_for_unclassified_data
+      notes: Official Indian water resources portal with unclassified CWC and CGWB data available for free download.
+    use_for:
+      - Indian basin/watershed layers
+      - hydro-observation station context
+      - groundwater and surface-water data
+    caveats:
+      - Portal workflows may be manual.
+      - Confirm station metadata and date ranges.
+
+  - id: bhuvan
+    name: Bhuvan API and Geoportal
+    organization: NRSC / ISRO
+    themes: [india, land_cover, village_geocoding, thematic_statistics, eo]
+    url: https://bhuvan-app1.nrsc.gov.in/api/
+    access:
+      method: api_or_geoportal
+      auth: token_or_registration_for_some_services
+      notes: Provides APIs including village geocoding and LULC thematic statistics.
+    use_for:
+      - India LULC statistics
+      - administrative/place lookup
+      - Indian EO/geospatial context
+    caveats:
+      - Some data/downloads require token or login.
+      - API coverage differs by service.
+

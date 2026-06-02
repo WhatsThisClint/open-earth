@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openearth"
+version = "0.1.0"
+description = "Open Earth: manifest-driven agentic workflows for Earth analysis, QGIS MCP maps, and reports."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Open Earth contributors" }]
+keywords = ["agents", "mcp", "qgis", "earth-analysis", "open-earth", "agency-swarm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "PyYAML>=6.0.2",
+]
+
+[project.optional-dependencies]
+agency = [
+    "agency-swarm[fastapi,jupyter,litellm]>=1.9.8",
+]
+dev = [
+    "build>=1.2.2",
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+openearth = "openearth.cli:main"
+earthswarm = "earthswarm.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["earthswarm*", "openearth*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+earthswarm = [
+    "schemas/*.json",
+    "dashboard_static/*",
+    "templates/earth_analysis/.env.example",
+    "templates/earth_analysis/**/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

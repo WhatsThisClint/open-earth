@@ -1,0 +1,82 @@
+﻿version: 1
+upstreams:
+  - name: OpenSwarm
+    repo: VRSEN/OpenSwarm
+    branch: main
+    url: https://github.com/VRSEN/OpenSwarm
+    kind: pattern-source
+    last_reviewed_sha: 7a32832cd89d8956f7faf6ba2704531478aa796b
+    watch_reason: Agency Swarm topology, live backend wiring, setup UX, deliverable-oriented specialists.
+    watched_paths:
+      - pyproject.toml
+      - swarm.py
+      - run_utils.py
+      - server.py
+      - shared_tools/
+      - patches/
+      - orchestrator/
+      - data_analyst_agent/
+      - docs_agent/
+      - slides_agent/
+    upgrade_notes:
+      - Look for startup/runtime speed improvements that can fit Open Earth without heavy auto-bootstrap behavior.
+      - Review Agency Swarm API changes before changing live mode.
+
+  - name: Pi vs Claude Code
+    repo: disler/pi-vs-claude-code
+    branch: main
+    url: https://github.com/disler/pi-vs-claude-code
+    kind: pattern-source
+    last_reviewed_sha: 3ce16391a1f4d244f9204578833506580273fe20
+    watch_reason: Fast team/chain orchestration, lightweight agent manifests, live progress, and safety gate ideas.
+    watched_paths:
+      - extensions/agent-chain.ts
+      - extensions/agent-team.ts
+      - extensions/subagent-widget.ts
+      - extensions/damage-control.ts
+      - extensions/damage-control-continue.ts
+      - extensions/coms.ts
+      - extensions/coms-net.ts
+      - specs/
+      - README.md
+    upgrade_notes:
+      - Copy concepts only; do not introduce a Pi runtime dependency.
+      - Favor patterns that improve dry-run speed, orchestration visibility, or controlled delegation.
+
+  - name: Hermes Agent
+    repo: nousresearch/hermes-agent
+    branch: main
+    url: https://github.com/nousresearch/hermes-agent
+    kind: pattern-source
+    last_reviewed_sha: 973f27e95631aaecbda5e32e3fa9e5d7f6a2e1d3
+    watch_reason: Doctor commands, MCP discipline, skills, security, packaging, state, and long-running operational hygiene.
+    watched_paths:
+      - pyproject.toml
+      - hermes_cli/doctor.py
+      - hermes_cli/setup.py
+      - hermes_cli/mcp_config.py
+      - tools/mcp_tool.py
+      - tools/skill_manager_tool.py
+      - tools/skills_tool.py
+      - agent/
+      - website/docs/reference/mcp-config-reference.md
+      - website/docs/guides/use-mcp-with-hermes.md
+    upgrade_notes:
+      - Watch for MCP transport, credential redaction, doctor, and dependency hygiene improvements.
+      - Avoid importing Hermes platform/messaging complexity into Open Earth v1.
+
+  - name: Agency Swarm
+    repo: VRSEN/agency-swarm
+    branch: main
+    url: https://github.com/VRSEN/agency-swarm
+    kind: dependency
+    last_reviewed_sha: 32bca5e4d69c8781d6d3dbd697d4231863c9564b
+    watch_reason: Open Earth live mode depends on Agency Swarm APIs and MCP support.
+    watched_paths:
+      - agency_swarm/
+      - pyproject.toml
+      - README.md
+      - docs/
+    upgrade_notes:
+      - Update the optional dependency only after agency-check, live-run mocks, and a real smoke test pass.
+

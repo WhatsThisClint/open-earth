@@ -1,0 +1,256 @@
+version: 1
+purpose: >
+  Deterministic data acquisition recipes. Small models should select a recipe,
+  fill AOI/time-period fields, then stage the recipe. If a direct download is
+  unsafe, too large, credentialed, or portal-driven, the recipe records a
+  blocker as typed evidence instead of pretending data were downloaded.
+recipes:
+  - id: aoi_locator
+    name: AOI locator and boundary staging
+    theme: aoi
+    description: Resolve the study-area boundary or record the administrative/manual boundary needed.
+    source_id: bhuvan
+    authority: NRSC / ISRO, or user-supplied official boundary
+    access_url: https://bhuvan-app1.nrsc.gov.in/api/
+    access_method: api_or_manual_boundary
+    auth: token_or_registration_for_some_services
+    license: confirm per source
+    resolution: administrative boundary dependent
+    crs: source dependent; reproject to project CRS before analysis
+    time_period: current boundary vintage if available
+    can_download: false
+    output_hint: data/raw/aoi/<study_area>.gpkg
+    blockers:
+      - Administrative boundary download may require portal/token access.
+      - User may need to provide a verified AOI GeoPackage, shapefile, or GeoJSON.
+    provenance_required: [source_url, access_date, boundary_level, crs, license, local_path]
+    steps:
+      - Search official/state/national boundary source for the AOI.
+      - Save raw boundary exactly as acquired.
+      - Reproject a processed copy to the project CRS.
+      - Record boundary vintage and uncertainty.
+
+  - id: dem_elevation
+    name: DEM and elevation staging
+    theme: dem
+    description: Stage a clipped DEM source for slope, drainage, and terrain context.
+    source_id: opentopography
+    authority: OpenTopography or NASA Earthdata
+    access_url: https://opentopography.org/
+    access_method: portal_or_global_dem_api
+    auth: api_key_may_be_required_for_global_datasets
+    license: confirm per DEM product
+    resolution: usually 30 m to 500 m for global DEMs
+    crs: raster native CRS; reproject derivatives to project CRS
+    time_period: product dependent
+    can_download: false
+    output_hint: data/raw/dem/dem_source.tif
+    blockers:
+      - Clipped API access may require an OpenTopography API key.
+      - DEM choice must match AOI scale and acceptable vertical accuracy.
+    provenance_required: [dataset_name, source_url, access_date, resolution, vertical_datum, license, local_path]
+    steps:
+      - Choose DEM source based on AOI scale and availability.
+      - Clip to AOI plus buffer.
+      - Record void filling, vertical datum, and resolution.
+      - Hand off to qgis_map_recipes terrain_slope_map.
+
+  - id: rainfall_chirps
+    name: CHIRPS rainfall staging
+    theme: rainfall
+    description: Stage rainfall climatology or recent rainfall signal for hydroclimate diagnosis.
+    source_id: chirps
+    authority: Climate Hazards Center, UC Santa Barbara
+    access_url: https://www.chc.ucsb.edu/data/chirps
+    access_method: http_ftp_or_cloud_catalog
+    auth: public
+    license: CHC terms; confirm current attribution requirements
+    resolution: 0.05 degree
+    crs: EPSG:4326
+    time_period: 1981 to near-present
+    can_download: false
+    output_hint: data/raw/rainfall/chirps_<period>.tif
+    blockers:
+      - Recipe needs date range and AOI bounding box before selecting files.
+      - Station-scale rainfall variability may not be captured.
+    provenance_required: [source_url, access_date, period, resolution, units, license, local_path]
+    steps:
+      - Select daily/monthly CHIRPS product matching the diagnosis question.
+      - Download only requested dates and AOI extent where possible.
+      - Summarize anomaly against climatology if required.
+      - Record uncertainty from gridded rainfall resolution.
+
+  - id: drainage_watershed_hydrosheds
+    name: Drainage and watershed staging
+    theme: hydrology
+    description: Stage drainage, flow accumulation, or watershed context for runoff and intervention planning.
+    source_id: hydrosheds
+    authority: HydroSHEDS / WWF and partners
+    access_url: https://www.hydrosheds.org/hydrosheds-core-downloads
+    access_method: direct_download_tiles
+    auth: public_with_license_terms
+    license: HydroSHEDS license and attribution required
+    resolution: product dependent
+    crs: product native CRS
+    time_period: DEM-derived baseline
+    can_download: false
+    output_hint: data/raw/hydrology/hydrosheds_layers.gpkg
+    blockers:
+      - Tile choice depends on AOI extent and HydroSHEDS product resolution.
+      - License terms must be reviewed before redistribution.
+    provenance_required: [product, tile, source_url, access_date, resolution, license, local_path]
+    steps:
+      - Select HydroSHEDS product and tile for AOI.
+      - Clip drainage/watershed layers to AOI plus buffer.
+      - Compare with local official drainage layers where available.
+      - Hand off to qgis_map_recipes drainage_watershed_map.
+
+  - id: lulc_worldcover
+    name: ESA WorldCover LULC staging
+    theme: land_cover
+    description: Stage 10 m LULC baseline for land-cover, vegetation, water, and exposure interpretation.
+    source_id: esa_worldcover
+    authority: European Space Agency
+    access_url: https://esa-worldcover.org/en/data-access
+    access_method: s3_cog_or_viewer
+    auth: public_s3_for_tiles_or_viewer_login
+    license: ESA WorldCover terms
+    resolution: 10 m
+    crs: EPSG:4326 tiled COGs
+    time_period: product year dependent
+    can_download: false
+    output_hint: data/raw/lulc/esa_worldcover_<year>.tif
+    blockers:
+      - Tile selection requires AOI location.
+      - Classification year and accuracy must be reported.
+    provenance_required: [product_year, tile, source_url, access_date, resolution, license, local_path]
+    steps:
+      - Select matching 3x3 degree WorldCover tile.
+      - Clip to AOI.
+      - Preserve original class codes and legend.
+      - Hand off to qgis_map_recipes lulc_vegetation_water_map.
+
+  - id: ndvi_dynamic_world
+    name: Dynamic World vegetation and water signal
+    theme: vegetation
+    description: Stage recent land-cover probabilities or vegetation/water evidence from Sentinel-2.
+    source_id: dynamic_world
+    authority: Google / World Resources Institute
+    access_url: https://developers.google.com/earth-engine/datasets/catalog/GOOGLE_DYNAMICWORLD_V1
+    access_method: google_earth_engine
+    auth: earth_engine_account_required
+    license: Google Earth Engine dataset terms
+    resolution: 10 m
+    crs: Earth Engine export CRS
+    time_period: near-real-time Sentinel-2 period
+    can_download: false
+    output_hint: data/raw/vegetation/dynamic_world_<period>.tif
+    blockers:
+      - Google Earth Engine authentication is required.
+      - Cloud masking and class probability thresholds must be chosen.
+    provenance_required: [earth_engine_asset, export_date, image_dates, cloud_filter, license, local_path]
+    steps:
+      - Filter by AOI, date range, and cloud cover.
+      - Export selected class/probability rasters.
+      - Record date range and cloud limitations.
+      - Use as evidence, not final land-use truth by itself.
+
+  - id: soils_soilgrids
+    name: SoilGrids soil properties staging
+    theme: soils
+    description: Stage soil texture, depth, pH, carbon, or bulk density proxies where official local soil surveys are unavailable.
+    source_id: soilgrids
+    authority: ISRIC SoilGrids
+    access_url: https://soilgrids.org/
+    access_method: web_services_api_or_download
+    auth: public
+    license: SoilGrids terms and attribution
+    resolution: 250 m
+    crs: source dependent
+    time_period: model vintage dependent
+    can_download: false
+    output_hint: data/raw/soils/soilgrids_<property>.tif
+    blockers:
+      - Property, depth interval, and statistic must be specified.
+      - Model predictions may be too coarse for site-level recommendations.
+    provenance_required: [property, depth, statistic, source_url, access_date, resolution, license, local_path]
+    steps:
+      - Select soil property and depth interval.
+      - Download AOI subset or global tile.
+      - Record modeled uncertainty and limitations.
+      - Use with field validation for final claims.
+
+  - id: groundwater_india_wris
+    name: India-WRIS groundwater and water resources staging
+    theme: groundwater
+    description: Stage Indian official water-resource context, stations, groundwater, rivers, dams, or watershed layers.
+    source_id: india_wris
+    authority: CWC, Ministry of Jal Shakti, NRSC/ISRO and partners
+    access_url: https://indiawris.gov.in/
+    access_method: webgis_portal_download
+    auth: public_for_unclassified_data
+    license: India-WRIS terms; confirm before redistribution
+    resolution: layer dependent
+    crs: source dependent
+    time_period: station/layer dependent
+    can_download: false
+    output_hint: data/raw/water_resources/india_wris_layers.gpkg
+    blockers:
+      - Portal workflows may require manual download.
+      - Station metadata and date ranges must be checked.
+    provenance_required: [layer_name, station_id, source_url, access_date, period, license, local_path]
+    steps:
+      - Identify relevant India-WRIS/CGWB/CWC layers for AOI.
+      - Download or export available unclassified layers.
+      - Record station metadata and date ranges.
+      - Use as high-priority evidence for India projects.
+
+  - id: osm_settlements_roads_water
+    name: OpenStreetMap settlements, roads, and water staging
+    theme: exposure
+    description: Stage OSM context layers for access, settlements, surface water, and preliminary infrastructure mapping.
+    source_id: openstreetmap
+    authority: OpenStreetMap contributors
+    access_url: https://www.openstreetmap.org/
+    access_method: overpass_geofabrik_or_qgis_plugins
+    auth: public
+    license: ODbL
+    resolution: volunteered feature completeness varies
+    crs: EPSG:4326 source; reproject for analysis
+    time_period: current OSM edit state at access date
+    can_download: false
+    output_hint: data/raw/osm/osm_context.gpkg
+    blockers:
+      - Overpass query needs AOI geometry or bbox.
+      - Completeness varies and must be checked against local knowledge.
+    provenance_required: [query, source_url, access_date, attribution, license, local_path]
+    steps:
+      - Query roads, settlements, waterways, water bodies, and facilities for AOI.
+      - Save raw extract and processed clipped layers.
+      - Compare with official/local datasets where available.
+      - Use attribution in maps and reports.
+
+  - id: population_worldpop
+    name: WorldPop population staging
+    theme: population
+    description: Stage gridded population estimates for exposure and beneficiary screening.
+    source_id: worldpop
+    authority: WorldPop
+    access_url: https://www.worldpop.org/
+    access_method: portal_or_api
+    auth: public
+    license: WorldPop terms by product
+    resolution: product dependent, often 100 m
+    crs: EPSG:4326 or product native CRS
+    time_period: product year dependent
+    can_download: false
+    output_hint: data/raw/population/worldpop_<year>.tif
+    blockers:
+      - Product/year/age-sex variant must be selected.
+      - Prefer official census data for final demographic claims.
+    provenance_required: [product, year, source_url, access_date, resolution, license, local_path]
+    steps:
+      - Select population product and year for AOI.
+      - Clip to AOI and summarize by intervention/risk zone if needed.
+      - Record modeled-estimate caveats.
+      - Use with local settlement and census context.

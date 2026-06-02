@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openearth.local/schemas/data_recipe.schema.json",
+  "title": "Open Earth Data Acquisition Recipe",
+  "type": "object",
+  "required": ["id", "name", "source_id", "access_url", "access_method"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "theme": { "type": "string" },
+    "description": { "type": "string" },
+    "source_id": { "type": "string" },
+    "authority": { "type": "string" },
+    "access_url": { "type": "string" },
+    "access_method": { "type": "string" },
+    "auth": { "type": "string" },
+    "license": { "type": "string" },
+    "resolution": { "type": "string" },
+    "crs": { "type": "string" },
+    "time_period": { "type": "string" },
+    "can_download": { "type": "boolean" },
+    "download_url": { "type": "string" },
+    "output_hint": { "type": "string" },
+    "blockers": { "type": "array", "items": { "type": "string" } },
+    "provenance_required": { "type": "array", "items": { "type": "string" } },
+    "steps": { "type": "array", "items": { "type": "string" } }
+  }
+}

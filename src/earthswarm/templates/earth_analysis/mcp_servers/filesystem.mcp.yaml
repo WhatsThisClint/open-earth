@@ -1,0 +1,17 @@
+﻿name: filesystem
+transport: stdio
+enabled: false
+command: npx
+args:
+  - -y
+  - "@modelcontextprotocol/server-filesystem"
+  - "."
+env: {}
+timeout_seconds: 120
+cache_tools: true
+approval: ask
+tool_policy:
+  blocked_tool_names: []
+notes: Optional filesystem MCP template. The built-in artifact store is preferred for normal runs.
+
+

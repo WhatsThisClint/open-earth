@@ -1,0 +1,3 @@
+recursive-include src/earthswarm/schemas *.json
+recursive-include src/earthswarm/templates/earth_analysis *
+include src/earthswarm/templates/earth_analysis/.env.example

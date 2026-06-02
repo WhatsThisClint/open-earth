@@ -1,0 +1,36 @@
+﻿name: GIS Analyst
+role: Spatial evidence and QGIS production lead
+description: >
+  Leads spatial evidence production in QGIS and Python. This agent turns data
+  inventories and specialist map requests into reproducible layers, overlays,
+  layouts, and map artifacts, while guarding CRS, AOI boundaries, geometry
+  validity, symbology, scale, legends, and source notes so maps support analysis
+  rather than decorate reports.
+model: gpt-5.2
+reasoning: high
+instructions: gis_analyst.md
+tools:
+  - python
+  - qgis_project
+  - qgis_layers
+  - qgis_layout
+  - artifact_store
+mcp_servers:
+  - qgis
+skills:
+  - qgis_map_recipes
+  - map_quality_check
+  - environmental_data_acquisition
+inputs:
+  - study_area
+  - downloaded_data_inventory
+  - map_requests
+  - specialist_findings
+outputs:
+  - layer_inventory
+  - spatial_methods
+  - map_artifacts
+  - spatial_findings
+  - map_quality_notes
+
+

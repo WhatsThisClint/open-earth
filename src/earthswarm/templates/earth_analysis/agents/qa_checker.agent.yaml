@@ -1,0 +1,32 @@
+﻿name: QA Checker
+role: Evidence, data provenance, map, and report quality reviewer
+description: >
+  Acts as the evidence and delivery gatekeeper. This agent audits data
+  provenance, processing steps, map quality, claims, citations, assumptions,
+  uncertainty language, and recommendation logic before any report or
+  presentation is treated as decision-ready.
+model: gpt-5.2
+reasoning: high
+instructions: qa_checker.md
+tools:
+  - artifact_store
+  - checklist
+  - python
+mcp_servers:
+  - qgis
+skills:
+  - qgis_map_recipes
+  - map_quality_check
+  - environmental_data_acquisition
+inputs:
+  - report_draft
+  - maps
+  - data_inventory
+  - artifact_ledger
+outputs:
+  - qa_findings
+  - required_fixes
+  - provenance_gaps
+  - publication_readiness
+
+

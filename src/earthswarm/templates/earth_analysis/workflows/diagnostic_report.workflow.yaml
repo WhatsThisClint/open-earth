@@ -1,0 +1,76 @@
+﻿name: Diagnostic Report
+description: End-to-end Earth diagnosis with maps, domain interpretation, report draft, and QA.
+inputs:
+  - project_brief
+  - study_area
+  - available_layers
+outputs:
+  - diagnosis
+  - map_package
+  - report_draft
+  - qa_findings
+steps:
+  - id: intake
+    agent: orchestrator
+    task: Clarify the problem, expected deliverables, study area, data inventory, and workflow plan.
+    produces:
+      - execution_plan
+  - id: spatial_context
+    agent: gis_analyst
+    task: Inspect available spatial data and create the base layer inventory and map needs list.
+    needs:
+      - intake
+    produces:
+      - layer_inventory
+      - base_map_requests
+  - id: domain_diagnosis
+    max_workers: 3
+    needs:
+      - spatial_context
+    parallel:
+      - agent: hydrogeologist
+        task: Diagnose groundwater and aquifer-related drivers. Request maps needed for confidence.
+        produces:
+          - hydrogeology_findings
+      - agent: economist
+        task: Assess livelihood, incentive, cost, and feasibility implications.
+        produces:
+          - economic_findings
+      - agent: watershed_manager
+        task: Diagnose watershed processes and intervention zones.
+        produces:
+          - watershed_findings
+  - id: map_package
+    agent: gis_analyst
+    task: Convert specialist map requests into a coherent map package and spatial evidence notes.
+    needs:
+      - domain_diagnosis
+    produces:
+      - map_artifacts
+      - spatial_findings
+  - id: synthesis
+    agent: orchestrator
+    task: Combine specialist findings and map evidence into one diagnosis and recommendation logic.
+    needs:
+      - map_package
+      - domain_diagnosis
+    produces:
+      - synthesis
+  - id: report
+    agent: report_writer
+    task: Draft the technical report and slide outline from synthesis and artifacts.
+    needs:
+      - synthesis
+    produces:
+      - report_draft
+      - slide_outline
+  - id: check
+    agent: qa_checker
+    task: Review maps, claims, assumptions, and report readiness.
+    needs:
+      - report
+    produces:
+      - qa_findings
+      - required_fixes
+
+

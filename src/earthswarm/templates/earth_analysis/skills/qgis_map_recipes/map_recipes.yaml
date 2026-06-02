@@ -1,0 +1,264 @@
+version: 1
+purpose: Small-model map recipe registry for Open Earth GIS agents.
+runner: scripts/openearth_qgis_recipes.py
+recipes:
+  - id: aoi_locator_map
+    use_when:
+      - aoi
+      - study area boundary
+      - base context
+      - village or taluka locator
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      admin_context: Higher-level administrative boundaries.
+      settlements: Settlement or village points/polygons.
+      roads: Road network.
+      drainage: Drainage network.
+      surface_water: Surface-water features.
+    outputs:
+      - AOI locator map export
+      - map_artifact.json with boundary provenance checklist
+    cautions:
+      - Verify the AOI boundary before using downstream derived area, slope, exposure, or population values.
+
+  - id: dem_clip
+    use_when:
+      - DEM staging
+      - elevation preprocessing
+      - clip elevation
+    required_inputs:
+      aoi: Vector AOI boundary.
+      dem: DEM raster.
+    optional_inputs: {}
+    outputs:
+      - dem_clipped.tif
+      - PNG/PDF DEM context map export
+    cautions:
+      - Record DEM product, resolution, vertical datum, void filling, and access date.
+
+  - id: terrain_slope_map
+    use_when:
+      - elevation
+      - slope
+      - hillshade
+      - terrain constraints
+      - contour context
+    required_inputs:
+      aoi: Vector AOI boundary.
+      dem: DEM raster.
+    optional_inputs: {}
+    outputs:
+      - dem_clipped.tif
+      - slope_degrees.tif
+      - hillshade.tif
+      - contours.gpkg when contour_interval is set
+      - PNG/PDF map export
+    cautions:
+      - Choose a projected CRS for slope, distance, and area interpretation.
+      - Record DEM source, resolution, vertical datum if known, and void-filling limitations.
+
+  - id: watershed_delineation_map
+    use_when:
+      - watershed delineation
+      - subwatershed context
+      - catchment boundary
+      - pour point review
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      dem: DEM raster for terrain context.
+      watersheds: Watershed polygons.
+      subwatersheds: Sub-watershed polygons.
+      drainage: Drainage network.
+      surface_water: Surface-water features.
+      pour_points: Outlet or validation points.
+    outputs:
+      - clipped watershed/subwatershed/drainage context layers
+      - PNG/PDF map export
+    cautions:
+      - If watershed polygons are not supplied, this recipe produces context only and should not be described as new delineation.
+
+  - id: drainage_watershed_map
+    use_when:
+      - drainage
+      - stream network
+      - watershed context
+      - runoff pathways
+      - waterbody context
+    required_inputs:
+      aoi: Vector AOI boundary.
+      drainage: Drainage or stream network vector.
+    optional_inputs:
+      watersheds: Watershed or sub-watershed polygons.
+      surface_water: Lakes, tanks, reservoirs, wetlands, or river polygons.
+      dem: DEM raster for hillshade context.
+    outputs:
+      - drainage_clipped.gpkg
+      - optional clipped watershed and surface-water layers
+      - PNG/PDF map export
+    cautions:
+      - Do not infer flow direction from a stream line alone unless DEM-derived or attributed.
+
+  - id: groundwater_potential_map
+    use_when:
+      - groundwater potential
+      - recharge screening
+      - well-siting evidence
+      - aquifer context
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      slope_score_raster: Reclassified slope score raster.
+      geology_score_raster: Reclassified geology/hydrostratigraphy score raster.
+      lineament_score_raster: Reclassified lineament proximity/density score raster.
+      drainage_density_score_raster: Reclassified drainage density score raster.
+      soil_score_raster: Reclassified soil infiltration score raster.
+      landcover_score_raster: Reclassified LULC recharge score raster.
+      wells: Existing wells, groundwater monitoring, or yield points.
+      geology: Geology vector.
+      lineaments: Lineament vector.
+      drainage: Drainage vector.
+    outputs:
+      - groundwater evidence stack
+      - groundwater_potential_score.tif when two or more score rasters are supplied
+      - PNG/PDF map export
+    cautions:
+      - Label as screening-level unless calibrated with hydrogeological observations.
+
+  - id: erosion_risk_screening_map
+    use_when:
+      - erosion
+      - runoff risk
+      - soil loss screening
+      - slope and land-cover risk
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      slope_score_raster: Reclassified slope risk raster.
+      rainfall_score_raster: Reclassified erosive rainfall score raster.
+      soil_erodibility_score_raster: Reclassified erodibility score raster.
+      landcover_risk_score_raster: Reclassified cover-management risk raster.
+      drainage: Drainage vector.
+      erosion_points: Known erosion or landslide observations.
+    outputs:
+      - erosion_risk_score.tif when two or more score rasters are supplied
+      - clipped evidence layers
+      - PNG/PDF map export
+    cautions:
+      - Do not call this RUSLE unless all RUSLE factors are correctly computed.
+
+  - id: lulc_vegetation_water_map
+    use_when:
+      - land cover
+      - vegetation condition
+      - NDVI
+      - NDWI
+      - forest/water/agriculture context
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      lulc: Land-cover vector.
+      lulc_raster: Land-cover raster.
+      ndvi: NDVI raster.
+      ndwi: NDWI raster.
+      surface_water: Surface-water vector.
+      forest: Forest boundary or canopy/vegetation vector.
+    outputs:
+      - clipped LULC/NDVI/NDWI/water evidence layers
+      - PNG/PDF map export
+    cautions:
+      - Always record imagery date, season, and cloud limitations.
+
+  - id: ndvi_vegetation_map
+    use_when:
+      - NDVI
+      - vegetation condition
+      - forest health
+      - seasonal greenness
+    required_inputs:
+      aoi: Vector AOI boundary.
+      ndvi: NDVI raster.
+    optional_inputs:
+      forest: Forest boundary or canopy/vegetation vector.
+      surface_water: Surface-water vector.
+      lulc: Land-cover vector.
+    outputs:
+      - ndvi_clipped.tif
+      - optional clipped forest/water/LULC overlays
+      - PNG/PDF map export
+    cautions:
+      - NDVI must include imagery date, sensor, cloud mask, and season.
+
+  - id: settlement_exposure_map
+    use_when:
+      - settlement exposure
+      - road/access analysis
+      - population at risk
+      - flood or erosion exposure
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      settlements: Village or settlement points/polygons.
+      roads: Road network.
+      population: Population grid or administrative population layer.
+      facilities: Schools, health centers, water infrastructure, or public assets.
+      risk_zone: Flood, erosion, slope, or intervention-zone polygon.
+      drainage: Drainage vector.
+      slope_raster: Slope or terrain raster.
+    outputs:
+      - clipped settlement/access/risk evidence layers
+      - PNG/PDF map export
+    cautions:
+      - Exposure is not vulnerability unless sensitivity and capacity evidence are added.
+
+  - id: field_validation_map
+    use_when:
+      - field check
+      - review validation
+      - field transect
+      - stream observation
+      - well check
+      - community validation
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      field_sites: Proposed validation sites or transects.
+      risk_zone: Area to verify.
+      drainage: Drainage vector.
+      settlements: Settlement layer.
+      roads: Road network.
+    outputs:
+      - printable field map
+      - evidence checklist in map_artifact.json
+      - PNG/PDF map export
+    cautions:
+      - Field map is a navigation and validation aid, not proof by itself.
+
+  - id: intervention_opportunity_map
+    use_when:
+      - intervention zones
+      - opportunity mapping
+      - recharge structures
+      - erosion treatment
+      - field prioritization
+    required_inputs:
+      aoi: Vector AOI boundary.
+    optional_inputs:
+      intervention_zones: Candidate intervention polygons.
+      erosion_hotspots: Erosion risk or observed erosion features.
+      recharge_zones: Recharge or groundwater opportunity features.
+      settlements: Settlement layer.
+      roads: Road network.
+      drainage: Drainage vector.
+      surface_water: Surface-water vector.
+      field_sites: Field validation sites.
+      groundwater_potential_raster: Groundwater potential raster.
+      erosion_risk_raster: Erosion risk raster.
+      slope_raster: Slope raster.
+      lulc_raster: LULC raster.
+    outputs:
+      - intervention_opportunity map export
+      - evidence stack in map_artifact.json
+    cautions:
+      - Treat as a synthesis map for discussion, not a final design without field, tenure, social, and cost checks.

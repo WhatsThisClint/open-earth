@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openearth.local/schemas/agent.schema.json",
+  "title": "Open Earth Agent Manifest",
+  "type": "object",
+  "required": ["name", "description", "instructions"],
+  "additionalProperties": true,
+  "properties": {
+    "slug": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "role": { "type": "string" },
+    "description": { "type": "string", "minLength": 1 },
+    "model": { "type": "string" },
+    "reasoning": { "type": "string", "enum": ["low", "medium", "high", "xhigh"] },
+    "instructions": { "type": "string" },
+    "prompt": { "type": "string" },
+    "tools": { "type": "array", "items": { "type": "string" } },
+    "mcp_servers": { "type": "array", "items": { "type": "string" } },
+    "skills": { "type": "array", "items": { "type": "string" } },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "metadata": { "type": "object" }
+  },
+  "anyOf": [
+    { "required": ["instructions"] },
+    { "required": ["prompt"] }
+  ]
+}

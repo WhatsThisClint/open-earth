@@ -1,0 +1,29 @@
+﻿name: Map First Analysis
+description: Start with QGIS/layer inspection, then route to domain specialists.
+inputs:
+  - study_area
+  - qgis_project
+outputs:
+  - map_inventory
+  - domain_questions
+  - next_workflow_plan
+steps:
+  - id: layer_inventory
+    agent: gis_analyst
+    task: Inspect the QGIS project/layers and produce a map-first inventory.
+  - id: route_questions
+    agent: orchestrator
+    task: Turn the map inventory into domain questions and specialist tasks.
+    needs:
+      - layer_inventory
+  - id: first_pass_diagnosis
+    max_workers: 3
+    parallel:
+      - agent: hydrogeologist
+        task: Review the map inventory for groundwater implications.
+      - agent: watershed_manager
+        task: Review the map inventory for watershed implications.
+      - agent: economist
+        task: Review the map inventory for livelihood and intervention economics.
+
+

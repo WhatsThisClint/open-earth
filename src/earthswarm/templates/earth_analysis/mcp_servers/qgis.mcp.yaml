@@ -1,0 +1,19 @@
+﻿name: qgis
+transport: stdio
+enabled: false
+command: qgis-mcp
+args: []
+env: {}
+timeout_seconds: 180
+cache_tools: true
+approval: ask
+tool_policy:
+  allowed_tool_names: []
+  blocked_tool_names: []
+notes: >
+  Placeholder for the local QGIS MCP server. Set enabled=true and replace
+  command/args with the command that launches your QGIS MCP server. Keep QGIS
+  attached first to GIS Analyst and QA Checker; selectively add it to domain
+  agents only when they truly need direct map operations.
+
+

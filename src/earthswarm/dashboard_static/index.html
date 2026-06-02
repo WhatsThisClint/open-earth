@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Open Earth Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">OE</span>
+          <div>
+            <h1>Open Earth</h1>
+            <p id="project-root">Local project dashboard</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <button class="nav-button active" data-view="agents">Agents</button>
+          <button class="nav-button" data-view="workflows">Workflows</button>
+          <button class="nav-button" data-view="data">Data</button>
+          <button class="nav-button" data-view="mcps">MCP</button>
+          <button class="nav-button" data-view="providers">Providers</button>
+          <button class="nav-button" data-view="evidence">Evidence</button>
+          <button class="nav-button" data-view="graph">Graph</button>
+          <button class="nav-button" data-view="memory">Memory</button>
+          <button class="nav-button" data-view="review">Review</button>
+          <button class="nav-button" data-view="run">Run</button>
+        </nav>
+        <div class="status-panel" id="status-panel"></div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Manifest-first swarm control</p>
+            <h2 id="view-title">Agents</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="refresh-button" class="secondary">Refresh</button>
+            <button id="validate-button">Validate</button>
+          </div>
+        </header>
+
+        <section id="agents-view" class="view active">
+          <div class="split">
+            <section class="panel list-panel">
+              <div class="panel-header">
+                <h3>Agents</h3>
+                <button id="new-agent-button" class="secondary">New</button>
+              </div>
+              <div id="agent-list" class="list"></div>
+            </section>
+
+            <section class="panel editor-panel">
+              <div class="panel-header">
+                <h3 id="agent-editor-title">Select an agent</h3>
+                <button id="save-agent-button">Save Agent</button>
+              </div>
+              <div id="agent-profile" class="agent-profile">
+                <p class="meta">Choose an agent to see its role, tools, skills, and prompt surface.</p>
+              </div>
+              <form id="agent-form" class="form-grid">
+                <label>Name<input name="name" autocomplete="off"></label>
+                <label>Role<input name="role" autocomplete="off"></label>
+                <label class="wide">Description<textarea name="description" rows="5"></textarea></label>
+                <label>Model<input name="model" autocomplete="off"></label>
+                <label>Reasoning
+                  <select name="reasoning">
+                    <option>low</option>
+                    <option>medium</option>
+                    <option>high</option>
+                    <option>xhigh</option>
+                  </select>
+                </label>
+                <label>Tools<textarea name="tools" rows="4" spellcheck="false"></textarea></label>
+                <label>MCP servers<textarea name="mcp_servers" rows="4" spellcheck="false"></textarea></label>
+                <label>Skills<textarea name="skills" rows="4" spellcheck="false"></textarea></label>
+                <label>Outputs<textarea name="outputs" rows="4" spellcheck="false"></textarea></label>
+                <label class="wide">Prompt<textarea name="prompt" rows="16" spellcheck="false"></textarea></label>
+              </form>
+            </section>
+          </div>
+        </section>
+
+        <section id="workflows-view" class="view">
+          <section class="panel">
+            <div class="panel-header"><h3>Workflow Topology</h3></div>
+            <div id="workflow-list" class="cards"></div>
+          </section>
+        </section>
+
+        <section id="data-view" class="view">
+          <div class="split data-split">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Acquisition Recipes</h3>
+                <button id="data-refresh-button" class="secondary">Refresh</button>
+              </div>
+              <div id="data-recipe-list" class="cards"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Stage Dataset</h3>
+                <button id="stage-data-button">Stage</button>
+              </div>
+              <form id="data-stage-form" class="form-grid">
+                <label>Recipe<select name="recipe" id="data-stage-recipe"></select></label>
+                <label>AOI<input name="aoi" placeholder="Kaprada taluka boundary"></label>
+                <label>Time period<input name="time_period" placeholder="2024 monsoon or 1981-2024"></label>
+                <label class="wide">Note<textarea name="note" rows="4" placeholder="Why this dataset is needed and what is still missing."></textarea></label>
+                <label class="checkbox-row"><input type="checkbox" name="allow_download"> Allow direct public download</label>
+              </form>
+              <pre id="data-stage-output" class="output"></pre>
+            </section>
+          </div>
+        </section>
+
+        <section id="mcps-view" class="view">
+          <section class="panel">
+            <div class="panel-header"><h3>MCP Servers</h3></div>
+            <div id="mcp-list" class="cards"></div>
+          </section>
+        </section>
+
+        <section id="providers-view" class="view">
+          <section class="panel">
+            <div class="panel-header"><h3>Provider Routes</h3></div>
+            <div id="provider-list" class="cards"></div>
+          </section>
+        </section>
+
+        <section id="evidence-view" class="view">
+          <div class="split evidence-split">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Evidence Records</h3>
+                <button id="evidence-refresh-button" class="secondary">Refresh</button>
+              </div>
+              <div id="evidence-list" class="cards"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-header"><h3>Claims</h3></div>
+              <div id="claim-list" class="cards"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="graph-view" class="view">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>Graph Memory</h3>
+              <button id="ingest-graph-button">Rebuild Memory</button>
+            </div>
+            <div class="query-row">
+              <input id="graph-query-input" placeholder="Search Kaprada, groundwater, India-WRIS, QGIS...">
+              <button id="graph-query-button" class="secondary">Draw Graph</button>
+            </div>
+            <div class="graph-workspace">
+              <div id="graph-canvas" class="graph-canvas"></div>
+              <aside class="graph-side">
+                <section class="graph-detail" id="graph-node-details">
+                  <h3>Knowledge Graph</h3>
+                  <p class="meta">Search or draw the graph to inspect nodes, typed relationships, and connected evidence.</p>
+                </section>
+                <div id="graph-results" class="results compact-results"></div>
+              </aside>
+            </div>
+          </section>
+        </section>
+
+        <section id="review-view" class="view">
+          <div class="split review-split">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Trigger Simulator</h3>
+                <button id="trigger-evaluate-button">Evaluate</button>
+              </div>
+              <form id="trigger-form" class="form-grid">
+                <label>Source<input name="source" value="rainfall"></label>
+                <label>Metric<input name="metric" value="rainfall_6h_mm"></label>
+                <label>Value<input name="value" value="130"></label>
+                <label>Location<input name="location" value="Kaprada upper watershed"></label>
+                <label class="wide">Note<textarea name="note" rows="4">Manual test event from dashboard.</textarea></label>
+              </form>
+              <pre id="trigger-output" class="output"></pre>
+            </section>
+            <div class="review-column">
+              <section class="panel">
+                <div class="panel-header">
+                  <h3>Human Review Queue</h3>
+                  <button id="review-refresh-button" class="secondary">Refresh</button>
+                </div>
+                <div id="review-list" class="cards"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-header">
+                  <h3>Field Validation Tasks</h3>
+                  <button id="field-refresh-button" class="secondary">Refresh</button>
+                </div>
+                <div id="field-list" class="cards"></div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section id="memory-view" class="view">
+          <div class="split memory-split">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Capture Learning</h3>
+                <button id="memory-save-button">Add Memory</button>
+              </div>
+              <form id="memory-form" class="form-grid">
+                <label>Kind
+                  <select name="kind">
+                    <option value="human_feedback">Human feedback</option>
+                    <option value="correction">Correction</option>
+                    <option value="preference">Preference</option>
+                    <option value="lesson">Lesson</option>
+                    <option value="decision">Decision</option>
+                    <option value="assumption">Assumption</option>
+                    <option value="field_insight">Field insight</option>
+                    <option value="model_note">Model note</option>
+                    <option value="workflow_note">Workflow note</option>
+                  </select>
+                </label>
+                <label>Confidence
+                  <select name="confidence">
+                    <option>medium</option>
+                    <option>high</option>
+                    <option>low</option>
+                  </select>
+                </label>
+                <label class="wide">Title<input name="title" placeholder="GIS maps need source dates in layout notes"></label>
+                <label class="wide">Body<textarea name="body" rows="7" placeholder="What did the human correct, prefer, decide, or learn?"></textarea></label>
+                <label class="wide">Applies to<textarea name="applies_to" rows="3" placeholder="agent:gis_analyst&#10;skill:qgis_map_recipes&#10;field_task:fv_..."></textarea></label>
+                <label>Tags<textarea name="tags" rows="3" placeholder="maps&#10;kaprada&#10;qa"></textarea></label>
+                <label>Evidence refs<textarea name="evidence_refs" rows="3" placeholder="run:...&#10;artifact:...&#10;review_item:..."></textarea></label>
+              </form>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Learning Memory</h3>
+                <button id="memory-refresh-button" class="secondary">Refresh</button>
+              </div>
+              <div id="memory-list" class="cards"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="run-view" class="view">
+          <section class="panel">
+            <div class="panel-header"><h3>Dry Run</h3></div>
+            <div class="run-grid">
+              <label>Workflow<select id="run-workflow"></select></label>
+              <label class="wide">Task<textarea id="run-task" rows="7">Diagnose Kaprada taluka, Valsad district, Gujarat, India for groundwater, watershed, ecology, soils, livelihood, and intervention opportunities.</textarea></label>
+              <button id="run-button">Run Dry Workflow</button>
+            </div>
+            <pre id="run-output" class="output"></pre>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="new-agent-dialog">
+      <form method="dialog" id="new-agent-form" class="dialog-form">
+        <h3>Create Agent</h3>
+        <label>Name<input name="name" required autocomplete="off"></label>
+        <label>Role<input name="role" autocomplete="off"></label>
+        <label>Description<textarea name="description" rows="3"></textarea></label>
+        <label>Template
+          <select name="template">
+            <option value="domain">Domain specialist</option>
+            <option value="gis">GIS operator</option>
+            <option value="writer">Writer</option>
+            <option value="reviewer">Reviewer</option>
+          </select>
+        </label>
+        <menu>
+          <button value="cancel" class="secondary">Cancel</button>
+          <button id="create-agent-submit" value="default">Create</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

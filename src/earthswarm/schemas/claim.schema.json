@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openearth.local/schemas/claim.schema.json",
+  "title": "Open Earth Claim Record",
+  "type": "object",
+  "required": ["claim_type", "statement", "reviewer_status"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string" },
+    "claim_type": {
+      "type": "string",
+      "enum": ["finding", "diagnosis", "risk", "recommendation", "assumption", "blocker", "uncertainty"]
+    },
+    "statement": { "type": "string", "minLength": 1 },
+    "status": { "type": "string" },
+    "confidence": { "type": "string" },
+    "evidence_ids": { "type": "array", "items": { "type": "string" } },
+    "agent": { "type": "string" },
+    "workflow": { "type": "string" },
+    "run_id": { "type": "string" },
+    "uncertainty": { "type": "string" },
+    "reviewer_status": {
+      "type": "string",
+      "enum": ["open", "approved", "corrected", "rejected", "uncertain", "needs_field_validation", "closed"]
+    },
+    "metadata": { "type": "object" }
+  }
+}

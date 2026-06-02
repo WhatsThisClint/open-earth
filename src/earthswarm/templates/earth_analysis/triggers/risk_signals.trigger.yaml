@@ -1,0 +1,95 @@
+version: 1
+purpose: >
+  Starter trigger rules for Open Earth. These rules do not call live APIs by
+  themselves; they evaluate events produced by data adapters, scripts, manual
+  entry, or future monitors.
+rules:
+  - id: high_rainfall_6h
+    name: High rainfall detected
+    description: Six-hour rainfall exceeds a flood/runoff screening threshold.
+    source: rainfall
+    metric: rainfall_6h_mm
+    severity: high
+    confidence: medium
+    condition:
+      op: ">="
+      value: 125
+    review:
+      required: true
+      workflow: diagnostic_report
+      agents:
+        - climate_hydrology_analyst
+        - watershed_manager
+        - gis_analyst
+        - qa_checker
+      suggested_action: >
+        Review upstream rainfall, drainage, slope, settlements, and waterbody
+        layers. Decide whether a rapid flood/runoff diagnosis or field check is
+        needed.
+      field_validation:
+        - stream_obs
+        - community_input
+
+  - id: rapid_water_level_rise
+    name: Rapid water-level rise
+    description: Water-level sensor change suggests possible flood response or sensor error.
+    source: sensor
+    metric: water_level_change_m
+    severity: high
+    confidence: medium
+    condition:
+      op: ">="
+      value: 1.0
+    review:
+      required: true
+      workflow: diagnostic_report
+      agents:
+        - climate_hydrology_analyst
+        - watershed_manager
+        - gis_analyst
+      suggested_action: Check recent rainfall, nearby stream observations, and sensor health.
+      field_validation:
+        - stream_obs
+        - field_notebook
+
+  - id: missing_critical_sensor
+    name: Critical sensor data missing
+    description: A required sensor feed is missing or stale.
+    source: sensor
+    metric: status
+    severity: medium
+    confidence: high
+    condition:
+      op: "=="
+      value: missing
+    review:
+      required: true
+      workflow: diagnostic_report
+      agents:
+        - data_steward
+        - qa_checker
+      suggested_action: Record the data gap, choose a fallback source, and mark uncertainty.
+      field_validation:
+        - field_notebook
+
+  - id: low_soil_moisture
+    name: Low soil-moisture signal
+    description: Soil-moisture signal is below a screening threshold for drought stress.
+    source: sensor
+    metric: soil_moisture_percent
+    severity: medium
+    confidence: medium
+    condition:
+      op: "<="
+      value: 15
+    review:
+      required: true
+      workflow: diagnostic_report
+      agents:
+        - soil_scientist
+        - economist
+        - climate_hydrology_analyst
+      suggested_action: Compare with rainfall anomaly, crop calendar, soils, and livelihood exposure.
+      field_validation:
+        - soil_check
+        - community_input
