@@ -19,9 +19,34 @@ The dashboard can:
 - inspect evidence and claim records
 - validate the project
 - rebuild and query Graph RAG memory
-- run a dry workflow and index its artifacts
+- run dry or live workflows and index their artifacts
+- select live backends such as Ollama, Codex CLI, Codex + Ollama, NVIDIA, or Agency Swarm
+- check whether an Ollama host can see the selected model before running
 
 The dashboard follows the same principle as the CLI: manifests remain the source of truth. Saving an agent writes `agents/<slug>.agent.yaml` and `agents/<slug>.md`, then runs validation.
+
+## Run Workflows
+
+Use the Run tab to choose:
+
+- `Dry run` for fast manifest validation with no model calls
+- `Live Ollama` for models served by Ollama, including `minimax-m3:cloud`
+- `Live Codex + Ollama` for Codex CLI orchestration with Ollama model routing
+- `Live Codex CLI` for the official Codex CLI backend
+- `Live NVIDIA` for the hosted NVIDIA chat route
+- `Live Agency` for the optional Agency Swarm backend
+
+For Ollama, keep the host as `http://127.0.0.1:11434` unless your Ollama server
+is elsewhere. Set the model field, then click **Check Ollama**. If the model is
+not listed, run this once in a terminal:
+
+```bash
+ollama run minimax-m3:cloud
+```
+
+Live runs can take several minutes. When a run finishes, the dashboard shows the
+backend, model, run id, artifact directory, trace messages, step summaries, and
+updated graph counts.
 
 ## Security Notes
 
@@ -38,7 +63,7 @@ Future dashboard evolution:
 
 - workflow visual editor
 - MCP manifest editor with safe connection tests
-- provider/model route editor for Ollama, NVIDIA, Codex CLI, OpenRouter, and API-key backends
+- provider/model route editor for saving route changes back to `providers.yaml`
 - artifact browser with map previews
 - Graph RAG explorer with node neighborhoods
 - live run monitor with streaming progress

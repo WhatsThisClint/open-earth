@@ -151,6 +151,10 @@ You can also create and edit agents in the local dashboard:
 openearth dashboard
 ```
 
+The dashboard Run tab can launch dry runs and live backends. Choose `Live
+Ollama`, keep the host as `http://127.0.0.1:11434`, set the model to
+`minimax-m3:cloud`, and use **Check Ollama** before starting the run.
+
 ## Small-Model Map Skills
 
 The template includes `skills/qgis_map_recipes`, a deterministic QGIS recipe

@@ -6,6 +6,7 @@ import secrets
 import threading
 import time
 import urllib.parse
+import urllib.request
 import webbrowser
 from dataclasses import asdict
 from http import HTTPStatus
@@ -17,6 +18,7 @@ from typing import Any
 import yaml
 
 from .agent_authoring import create_agent
+from .codex_cli import CodexCliWorkflowRunner
 from .data_acquisition import DataAcquisitionCatalog
 from .evidence import EvidenceStore
 from .field_validation import FieldValidationStore
@@ -24,10 +26,13 @@ from .graph_store import GraphStore
 from .learning_memory import LearningMemoryStore
 from .loader import ManifestLoader
 from .models import normalize_slug
+from .nvidia_runner import NvidiaWorkflowRunner
+from .ollama_runner import OllamaWorkflowRunner, normalize_ollama_host, normalize_ollama_model
 from .provider_router import ProviderRouter
 from .review_queue import ACTION_STATUS, ReviewQueue
+from .trace import RunTracer
 from .trigger_engine import TriggerEngine
-from .workflow_runner import FastWorkflowRunner
+from .workflow_runner import FastWorkflowRunner, WorkflowRunResult
 
 
 SESSION_HEADER = "X-OpenEarth-Session-Token"
@@ -70,6 +75,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self._json({"skills": _skills_payload(self.server.root)})
             elif path == "/api/providers":
                 self._json({"default_provider": ProviderRouter(self.server.root).default_provider(), "profiles": ProviderRouter(self.server.root).status()})
+            elif path == "/api/ollama/status":
+                host = str(query.get("host", [""])[0])
+                model = str(query.get("model", [""])[0])
+                self._json(_ollama_status_payload(host=host, model=model))
             elif path == "/api/data/recipes":
                 recipes = DataAcquisitionCatalog(self.server.root).recipes()
                 self._json({"recipes": [asdict(recipe) for recipe in recipes.values()]})
@@ -338,11 +347,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 if not task.strip():
                     raise ValueError("task is required")
                 loader = ManifestLoader(self.server.root)
-                result = FastWorkflowRunner(loader).run(workflow, task, dry_run=True)
+                result, traces, run_meta = _dashboard_run(loader, workflow, task, body)
                 store = GraphStore(self.server.root)
                 store.ingest_project(loader)
                 store.ingest_artifacts(run_id=result.run_id)
-                self._json({"ok": True, "result": asdict(result)})
+                self._json({"ok": True, "result": asdict(result), "trace": traces, "run": run_meta, "graph": store.stats().as_dict()})
             else:
                 self._json({"detail": "Not found"}, status=HTTPStatus.NOT_FOUND)
         except Exception as exc:
@@ -524,6 +533,106 @@ def _mcps_payload(root: Path) -> list[dict[str, Any]]:
 
 def _skills_payload(root: Path) -> list[dict[str, Any]]:
     return [{"slug": slug, "path": str(path)} for slug, path in ManifestLoader(root).skills().items()]
+
+
+def _dashboard_run(
+    loader: ManifestLoader,
+    workflow: str,
+    task: str,
+    body: dict[str, Any],
+) -> tuple[WorkflowRunResult, list[str], dict[str, Any]]:
+    mode = str(body.get("mode") or body.get("run_mode") or "").strip().lower()
+    if not mode:
+        mode = "live" if body.get("live") else "dry"
+    backend = str(body.get("backend") or "").strip().lower()
+    if mode in {"ollama", "codex-ollama", "codex-cli", "nvidia", "agency"} and not backend:
+        backend = mode
+        mode = "live"
+    if mode not in {"dry", "live"}:
+        raise ValueError(f"unsupported run mode: {mode}")
+
+    traces: list[str] = []
+    if mode == "dry":
+        result = FastWorkflowRunner(loader).run(workflow, task, dry_run=True)
+        return result, traces, {"mode": "dry", "backend": "dry", "model": "", "host": ""}
+
+    backend = backend or "ollama"
+    model = str(body.get("model") or "").strip()
+    host = str(body.get("host") or body.get("ollama_host") or "").strip()
+    codex_command = str(body.get("codex_command") or "").strip() or None
+    nvidia_url = str(body.get("nvidia_url") or "").strip() or None
+    tracer = RunTracer(enabled=True, sink=traces.append)
+    tracer.emit(f"workflow: {workflow}")
+    tracer.emit(f"backend: {backend}")
+    if model:
+        tracer.emit(f"model: {model}")
+
+    if backend == "ollama":
+        result = OllamaWorkflowRunner(loader, model=model or None, host=host or None, tracer=tracer).run(workflow, task)
+        return result, traces, {
+            "mode": "live",
+            "backend": backend,
+            "model": result.steps[0].details.get("model", model),
+            "host": host,
+        }
+    if backend == "codex-ollama":
+        selected_model = model or "minimax-m3:cloud"
+        result = CodexCliWorkflowRunner(
+            loader,
+            command=codex_command,
+            model=selected_model,
+            use_oss=True,
+            local_provider="ollama",
+            tracer=tracer,
+        ).run(workflow, task)
+        return result, traces, {"mode": "live", "backend": backend, "model": selected_model, "host": host}
+    if backend == "codex-cli":
+        result = CodexCliWorkflowRunner(loader, command=codex_command, model=model or None, tracer=tracer).run(workflow, task)
+        return result, traces, {"mode": "live", "backend": backend, "model": model, "host": ""}
+    if backend == "nvidia":
+        result = NvidiaWorkflowRunner(loader, model=model or None, invoke_url=nvidia_url, stream=False, tracer=tracer).run(workflow, task)
+        return result, traces, {"mode": "live", "backend": backend, "model": model, "host": nvidia_url or ""}
+    if backend == "agency":
+        from .live_runner import AgencyWorkflowRunner
+
+        result = AgencyWorkflowRunner(loader, tracer=tracer).run(workflow, task)
+        return result, traces, {"mode": "live", "backend": backend, "model": model, "host": ""}
+    raise ValueError(f"unsupported live backend: {backend}")
+
+
+def _ollama_status_payload(host: str = "", model: str = "") -> dict[str, Any]:
+    normalized_host = normalize_ollama_host(host or None)
+    normalized_model = normalize_ollama_model(model or None)
+    url = normalized_host + "/api/tags"
+    try:
+        with urllib.request.urlopen(url, timeout=5) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:
+        return {
+            "ok": False,
+            "host": normalized_host,
+            "model": normalized_model,
+            "models": [],
+            "model_available": False,
+            "detail": f"Ollama is not reachable at {url}: {exc}",
+            "command": f"ollama run {normalized_model}",
+        }
+    models = [str(item.get("name")) for item in payload.get("models", []) if isinstance(item, dict) and item.get("name")]
+    available = normalized_model in models
+    detail = (
+        f"{normalized_model} is available."
+        if available
+        else f"{normalized_model} was not listed. Run `ollama run {normalized_model}` once, then check again."
+    )
+    return {
+        "ok": True,
+        "host": normalized_host,
+        "model": normalized_model,
+        "models": models,
+        "model_available": available,
+        "detail": detail,
+        "command": f"ollama run {normalized_model}",
+    }
 
 
 def _update_agent(root: Path, slug: str, payload: dict[str, Any]) -> None:

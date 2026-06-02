@@ -6,6 +6,7 @@ const state = {
   workflows: [],
   mcps: [],
   providers: [],
+  defaultProvider: "",
   dataRecipes: [],
   evidenceRecords: [],
   claimRecords: [],
@@ -63,7 +64,7 @@ function setView(name) {
     graph: "Graph Memory",
     memory: "Learning Memory",
     review: "Human Review",
-    run: "Dry Run",
+    run: "Run Workflow",
   }[name] || "Open Earth";
   if (name === "graph" && !state.graphNetwork) queryGraph().catch((err) => toast(err.message, "error"));
 }
@@ -86,6 +87,7 @@ async function refresh() {
   state.workflows = workflows.workflows;
   state.mcps = mcps.mcps;
   state.providers = providers.profiles;
+  state.defaultProvider = providers.default_provider || "";
   state.dataRecipes = dataRecipes.recipes;
   state.evidenceRecords = evidence.records;
   state.claimRecords = claims.records;
@@ -101,6 +103,7 @@ async function refresh() {
   renderEvidence();
   renderClaims();
   renderRunWorkflows();
+  renderRunMode();
   renderReview();
   renderField();
   renderMemory();
@@ -358,7 +361,52 @@ function renderClaims() {
 
 function renderRunWorkflows() {
   const select = qs("#run-workflow");
+  const selected = select.value;
   select.innerHTML = state.workflows.map((workflow) => `<option value="${workflow.slug}">${workflow.name}</option>`).join("");
+  if (selected) select.value = selected;
+}
+
+function renderRunMode() {
+  const mode = qs("#run-mode")?.value || "dry";
+  const model = qs("#run-model");
+  const host = qs("#run-host");
+  const codexCommand = qs("#run-codex-command");
+  const summary = qs("#run-mode-summary");
+  const button = qs("#run-button");
+  if (!summary || !model || !host || !codexCommand || !button) return;
+
+  const defaults = {
+    dry: "",
+    ollama: providerModel("ollama_local") || "minimax-m3:cloud",
+    "codex-ollama": providerModel("ollama_local") || "minimax-m3:cloud",
+    "codex-cli": providerModel("codex_cli") || "gpt-5.5",
+    nvidia: providerModel("nvidia_kimi") || "moonshotai/kimi-k2.6",
+    agency: providerModel("openai_api_key") || "gpt-5.2",
+  };
+  if (!model.value || model.dataset.lastMode !== mode) model.value = defaults[mode] || "";
+  model.dataset.lastMode = mode;
+
+  const needsOllama = mode === "ollama" || mode === "codex-ollama";
+  host.disabled = !needsOllama;
+  codexCommand.disabled = mode !== "codex-cli" && mode !== "codex-ollama";
+  model.disabled = mode === "dry";
+  qs("#ollama-check-button").disabled = !needsOllama;
+  button.textContent = mode === "dry" ? "Run Dry Workflow" : "Run Live Workflow";
+
+  const messages = {
+    dry: "No model call. Validates the workflow, records draft evidence and claims, and indexes graph memory.",
+    ollama: "Runs the workflow through Ollama. Use this for minimax-m3:cloud or other local/cloud Ollama models.",
+    "codex-ollama": "Runs Codex CLI orchestration while routing model calls through Ollama.",
+    "codex-cli": "Runs the official Codex CLI backend using your Codex login.",
+    nvidia: "Runs the NVIDIA hosted chat backend. Requires NVIDIA_API_KEY.",
+    agency: "Runs the optional Agency Swarm backend. Requires provider API keys and the agency extra.",
+  };
+  summary.innerHTML = `<p class="meta">${escapeHtml(messages[mode] || "")}</p>`;
+}
+
+function providerModel(id) {
+  const provider = state.providers.find((item) => item.id === id);
+  return provider?.default_model || "";
 }
 
 async function validateProject() {
@@ -725,17 +773,54 @@ function truncate(value, length) {
   return text.length > length ? `${text.slice(0, length - 1)}...` : text;
 }
 
-async function runDry() {
+async function checkOllamaModel() {
+  const model = qs("#run-model").value || "minimax-m3:cloud";
+  const host = qs("#run-host").value || "http://127.0.0.1:11434";
+  const result = await api(`/api/ollama/status?host=${encodeURIComponent(host)}&model=${encodeURIComponent(model)}`);
+  qs("#run-output").textContent = JSON.stringify(result, null, 2);
+  toast(result.model_available ? `${result.model} is available.` : result.detail, result.model_available ? "ok" : "warn");
+}
+
+async function runWorkflow() {
   const output = qs("#run-output");
-  output.textContent = "Running dry workflow...";
+  const mode = qs("#run-mode").value;
+  output.textContent = mode === "dry" ? "Running dry workflow..." : "Running live workflow. This can take a few minutes...";
   const payload = {
     workflow: qs("#run-workflow").value,
     task: qs("#run-task").value,
+    mode,
+    backend: mode === "dry" ? "dry" : mode,
+    model: qs("#run-model").value,
+    host: qs("#run-host").value,
+    codex_command: qs("#run-codex-command").value,
   };
   const result = await api("/api/run", { method: "POST", body: JSON.stringify(payload) });
-  output.textContent = JSON.stringify(result.result, null, 2);
-  toast("Dry run complete and indexed.");
+  output.textContent = formatRunResult(result);
+  toast(mode === "dry" ? "Dry run complete and indexed." : "Live run complete and indexed.");
   await refresh();
+}
+
+function formatRunResult(payload) {
+  const result = payload.result || {};
+  const run = payload.run || {};
+  const lines = [
+    `mode: ${run.mode || ""}`,
+    `backend: ${run.backend || ""}`,
+    run.model ? `model: ${run.model}` : "",
+    run.host ? `host: ${run.host}` : "",
+    `workflow: ${result.workflow || ""}`,
+    `run_id: ${result.run_id || ""}`,
+    `artifacts: ${result.artifact_dir || ""}`,
+    `elapsed_ms: ${Math.round(result.elapsed_ms || 0)}`,
+    payload.graph ? `graph: ${payload.graph.nodes} nodes, ${payload.graph.chunks} chunks` : "",
+    "",
+    payload.trace?.length ? "trace:" : "",
+    ...(payload.trace || []).map((line) => `  ${line}`),
+    "",
+    "steps:",
+    ...((result.steps || []).map((step) => `  [${step.status}] ${step.step_id} / ${step.agent} / ${Math.round(step.elapsed_ms || 0)} ms\n    ${step.summary || ""}`)),
+  ].filter((line) => line !== "");
+  return lines.join("\n");
 }
 
 function bind() {
@@ -782,7 +867,9 @@ function bind() {
     if (!(target instanceof HTMLButtonElement)) return;
     memoryAction(target.dataset.id, target.dataset.action).catch((err) => toast(err.message, "error"));
   });
-  qs("#run-button").addEventListener("click", () => runDry().catch((err) => toast(err.message, "error")));
+  qs("#run-mode").addEventListener("change", renderRunMode);
+  qs("#ollama-check-button").addEventListener("click", () => checkOllamaModel().catch((err) => toast(err.message, "error")));
+  qs("#run-button").addEventListener("click", () => runWorkflow().catch((err) => toast(err.message, "error")));
 }
 
 bind();

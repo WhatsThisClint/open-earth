@@ -77,6 +77,13 @@ button:active {
   transform: translateY(0);
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+  box-shadow: none;
+}
+
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -436,6 +443,14 @@ select:focus {
   box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.1);
 }
 
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: #f2f3f3;
+  color: var(--faint);
+  cursor: not-allowed;
+}
+
 textarea {
   resize: vertical;
   font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
@@ -638,7 +653,15 @@ textarea {
 .run-grid {
   padding: 18px;
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.run-mode-summary {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: #f7faf9;
+  padding: 12px 14px;
 }
 
 .output {
@@ -734,7 +757,8 @@ menu {
     grid-template-columns: 1fr;
   }
 
-  .form-grid {
+  .form-grid,
+  .run-grid {
     grid-template-columns: 1fr;
   }
 

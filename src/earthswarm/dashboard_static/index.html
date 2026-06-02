@@ -252,11 +252,28 @@
 
         <section id="run-view" class="view">
           <section class="panel">
-            <div class="panel-header"><h3>Dry Run</h3></div>
+            <div class="panel-header">
+              <h3>Run Workflow</h3>
+              <button id="ollama-check-button" class="secondary">Check Ollama</button>
+            </div>
             <div class="run-grid">
               <label>Workflow<select id="run-workflow"></select></label>
+              <label>Mode
+                <select id="run-mode">
+                  <option value="dry">Dry run</option>
+                  <option value="ollama" selected>Live Ollama</option>
+                  <option value="codex-ollama">Live Codex + Ollama</option>
+                  <option value="codex-cli">Live Codex CLI</option>
+                  <option value="nvidia">Live NVIDIA</option>
+                  <option value="agency">Live Agency</option>
+                </select>
+              </label>
+              <label>Model<input id="run-model" value="minimax-m3:cloud" autocomplete="off"></label>
+              <label>Ollama host<input id="run-host" value="http://127.0.0.1:11434" autocomplete="off"></label>
+              <label class="wide">Codex command<input id="run-codex-command" placeholder="codex" autocomplete="off"></label>
               <label class="wide">Task<textarea id="run-task" rows="7">Diagnose Kaprada taluka, Valsad district, Gujarat, India for groundwater, watershed, ecology, soils, livelihood, and intervention opportunities.</textarea></label>
-              <button id="run-button">Run Dry Workflow</button>
+              <div id="run-mode-summary" class="run-mode-summary wide"></div>
+              <button id="run-button">Run Workflow</button>
             </div>
             <pre id="run-output" class="output"></pre>
           </section>

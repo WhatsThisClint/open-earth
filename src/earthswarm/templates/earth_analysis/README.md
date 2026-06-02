@@ -27,7 +27,12 @@ openearth dashboard
 ```
 
 The local dashboard lets you edit agent YAML and prompt Markdown, create agents
-from templates, validate the project, query graph memory, and run dry workflows.
+from templates, validate the project, query graph memory, and run dry or live
+workflows.
+
+In the Run tab, choose `Live Ollama`, keep the host as
+`http://127.0.0.1:11434`, set the model to `minimax-m3:cloud`, and click
+**Check Ollama** before starting a live run.
 
 ## Trigger And Review Loop
 

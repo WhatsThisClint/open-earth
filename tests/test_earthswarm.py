@@ -28,7 +28,7 @@ from earthswarm.project import copy_starter_template
 from earthswarm.review_queue import ReviewQueue
 from earthswarm.trigger_engine import TriggerEngine
 from earthswarm.upstream import UpstreamStatus, check_upstreams
-from earthswarm.workflow_runner import FastWorkflowRunner
+from earthswarm.workflow_runner import FastWorkflowRunner, StepResult, WorkflowRunResult
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -360,6 +360,66 @@ def test_dashboard_api_lists_and_updates_agents(tmp_path):
         assert staged["result"]["status"] == "blocked"
         evidence = _dashboard_json(base, "/api/evidence?status=all", server.token)
         assert any(record["id"] == staged["result"]["evidence_id"] for record in evidence["records"])
+
+        dry_run = _dashboard_json(
+            base,
+            "/api/run",
+            server.token,
+            method="POST",
+            body={"workflow": "diagnostic_report", "task": "Dashboard dry run smoke test.", "mode": "dry"},
+        )
+        assert dry_run["ok"] is True
+        assert dry_run["run"]["backend"] == "dry"
+        assert dry_run["result"]["workflow"] == "diagnostic_report"
+
+        class FakeDashboardOllamaRunner:
+            def __init__(self, loader, artifact_root=None, model=None, host=None, tracer=None):
+                self.loader = loader
+                self.model = model
+                self.host = host
+                self.tracer = tracer
+
+            def run(self, workflow_slug, task):
+                if self.tracer:
+                    self.tracer.emit("fake dashboard ollama backend started")
+                artifact_dir = project / "artifacts" / "fake-dashboard-live-run"
+                artifact_dir.mkdir(parents=True, exist_ok=True)
+                return WorkflowRunResult(
+                    workflow=workflow_slug,
+                    run_id="fake-dashboard-live-run",
+                    artifact_dir=artifact_dir,
+                    elapsed_ms=12.0,
+                    steps=[
+                        StepResult(
+                            step_id="ollama_live",
+                            agent="orchestrator",
+                            status="live",
+                            elapsed_ms=12.0,
+                            summary=f"{self.model} handled {task}",
+                            outputs=[],
+                            details={"backend": "ollama", "model": self.model, "host": self.host},
+                        )
+                    ],
+                )
+
+        with patch("earthswarm.dashboard.OllamaWorkflowRunner", FakeDashboardOllamaRunner):
+            live_run = _dashboard_json(
+                base,
+                "/api/run",
+                server.token,
+                method="POST",
+                body={
+                    "workflow": "map_first_analysis",
+                    "task": "Dashboard live Ollama smoke test.",
+                    "mode": "ollama",
+                    "model": "minimax-m3:cloud",
+                    "host": "http://127.0.0.1:11434",
+                },
+            )
+        assert live_run["ok"] is True
+        assert live_run["run"]["backend"] == "ollama"
+        assert live_run["run"]["model"] == "minimax-m3:cloud"
+        assert any("fake dashboard ollama backend started" in line for line in live_run["trace"])
 
         hydro = _dashboard_json(base, "/api/agents/hydrogeologist", server.token)
         payload = {
